@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+# Pantry Management App
 
-First, run the development server:
+A simple inventory tracking app built with Next.js and Firebase. Helps you keep track of items in your pantry with categories and quantities.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Features
+
+- Google authentication
+- Add/delete items
+- Search and filter
+- Real-time updates
+- Activity log
+
+## Tech Stack
+
+- Next.js 14
+- React 18
+- Firebase (Auth + Firestore)
+- Material-UI
+
+## Setup
+
+1. Clone the repo
+```
+git clone https://github.com/Samyukta04/inventory-management-app.git
+cd inventory-management-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies
+```
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Create `firebase.js` in the root with your Firebase config:
+```
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+const firebaseConfig = {
+  // your config here
+};
 
-## Learn More
+const app = initializeApp(firebaseConfig);
+export const firestore = getFirestore(app);
+export const auth = getAuth(app);
+export { GoogleAuthProvider };
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Enable Google sign-in in Firebase Console
+   - Go to Authentication > Sign-in method
+   - Enable Google provider
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Set Firestore rules:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /inventory/{itemId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+6. Run the app
+```
+npm run dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```
+app/
+├── components/
+│   └── SignIn.js
+├── styles/
+│   ├── Home.module.css
+│   └── SignIn.module.css
+├── layout.tsx
+└── page.js
+firebase.js
+package.json
+```
+
+## Usage
+
+- Sign in with Google
+- Add items with name, count, and category
+- Search to filter items
+- Delete items when needed
+- Check activity log for recent changes
+
