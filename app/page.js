@@ -1,5 +1,3 @@
-// Updated Pantry Management App with Google Sign-In Integration & Prettier UI
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -14,58 +12,14 @@ import {
 } from '@mui/material';
 import { AddCircle, Delete, Logout } from '@mui/icons-material';
 import { collection, query, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore';
-import { auth, firestore } from '../firebase';
+import { auth, firestore } from '@/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import styled from '@emotion/styled';
-import backgroundImage from '../public/background.jpg';
-import SignIn from '../app/SignIn';
-
-const Background = styled(Box)({
-  backgroundImage: `url(${backgroundImage.src})`,
-  backgroundSize: 'cover',
-  minHeight: '100vh',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  padding: '20px',
-});
-
-const Container = styled(Box)({
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-  borderRadius: '20px',
-  padding: '30px',
-  maxWidth: '900px',
-  width: '100%',
-  boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
-});
-
-const StyledHeading = styled(Typography)({
-  fontFamily: 'Segoe UI',
-  fontWeight: '700',
-  fontSize: '2.5rem',
-  color: '#1e88e5',
-  marginBottom: '10px',
-});
-
-const InputGroup = styled(Box)({
-  display: 'flex',
-  gap: '10px',
-  marginBottom: '20px',
-  flexWrap: 'wrap',
-});
-
-const InventoryItem = styled(Box)({
-  display: 'flex',
-  flexDirection: 'column',
-  padding: '16px',
-  border: '1px solid #ccc',
-  borderRadius: '10px',
-  marginBottom: '12px',
-  backgroundColor: '#f5f5f5',
-});
+import SignIn from './components/SignIn';
+import styles from './styles/Home.module.css';
 
 export default function Home() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [inventory, setInventory] = useState([]);
   const [itemName, setItemName] = useState('');
   const [itemCount, setItemCount] = useState('');
@@ -74,9 +28,11 @@ export default function Home() {
   const [log, setLog] = useState([]);
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
+      setLoading(false);
     });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -91,13 +47,18 @@ export default function Home() {
   }, [user]);
 
   const addItem = async () => {
-    if (!itemName || !itemCount) return;
+    if (!itemName || !itemCount) {
+      alert('Please fill in both item name and count');
+      return;
+    }
+
     const newItem = {
       name: itemName,
       count: parseInt(itemCount),
-      category,
+      category: category || 'Uncategorized',
       dateAdded: new Date().toISOString(),
     };
+
     try {
       const docRef = await addDoc(collection(firestore, 'inventory'), newItem);
       setLog(prev => [...prev, { ...newItem, id: docRef.id, action: 'added' }]);
@@ -106,6 +67,7 @@ export default function Home() {
       setCategory('');
     } catch (err) {
       console.error('Error adding item:', err);
+      alert('Failed to add item. Please try again.');
     }
   };
 
@@ -116,6 +78,7 @@ export default function Home() {
       setLog(prev => [...prev, { ...item, action: 'deleted' }]);
     } catch (err) {
       console.error('Error deleting item:', err);
+      alert('Failed to delete item. Please try again.');
     }
   };
 
@@ -123,67 +86,128 @@ export default function Home() {
     item.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (!user) return <Background><Container><SignIn onSignIn={setUser} /></Container></Background>;
+  if (loading) {
+    return (
+      <Box className={styles.loadingContainer}>
+        <Typography variant="h5">Loading...</Typography>
+      </Box>
+    );
+  }
+
+  if (!user) {
+    return <SignIn />;
+  }
 
   return (
-    <Background>
-      <Container>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <StyledHeading>Pantry Management</StyledHeading>
+    <Box className={styles.background}>
+      <Box className={styles.container}>
+        <Box className={styles.header}>
+          <Typography variant="h3" className={styles.heading}>
+            Pantry Management
+          </Typography>
           <Tooltip title="Sign Out">
-            <IconButton onClick={() => signOut(auth)}><Logout /></IconButton>
+            <IconButton onClick={() => signOut(auth)} color="error">
+              <Logout />
+            </IconButton>
           </Tooltip>
         </Box>
 
-        <InputGroup>
-          <TextField label="Item" value={itemName} onChange={(e) => setItemName(e.target.value)} fullWidth />
-          <TextField label="Count" type="number" value={itemCount} onChange={(e) => setItemCount(e.target.value)} />
-          <TextField label="Category" value={category} onChange={(e) => setCategory(e.target.value)} />
-          <Button variant="contained" startIcon={<AddCircle />} onClick={addItem}>Add</Button>
-        </InputGroup>
+        <Divider sx={{ marginBottom: '20px' }} />
+
+        <Box className={styles.inputGroup}>
+          <TextField
+            label="Item Name"
+            variant="outlined"
+            value={itemName}
+            onChange={(e) => setItemName(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Count"
+            type="number"
+            variant="outlined"
+            value={itemCount}
+            onChange={(e) => setItemCount(e.target.value)}
+          />
+          <TextField
+            label="Category"
+            variant="outlined"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          />
+          <Button
+            variant="contained"
+            startIcon={<AddCircle />}
+            onClick={addItem}
+            className={styles.addButton}
+          >
+            Add
+          </Button>
+        </Box>
 
         <TextField
           label="Search Items"
+          variant="outlined"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           fullWidth
           sx={{ marginBottom: '20px' }}
         />
 
-        <Divider sx={{ mb: 2 }} />
-
-        {filteredItems.length ? filteredItems.map(item => (
-          <InventoryItem key={item.id}>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="h6">{item.name}</Typography>
-                <Typography variant="body2">Count: {item.count}</Typography>
-                <Typography variant="body2">Category: {item.category || 'N/A'}</Typography>
-                <Typography variant="caption">Added: {new Date(item.dateAdded).toLocaleString()}</Typography>
-              </Box>
-              <Tooltip title="Delete">
+        <Box className={styles.inventoryList}>
+          {filteredItems.length ? (
+            filteredItems.map(item => (
+              <Box key={item.id} className={styles.inventoryItem}>
+                <Box className={styles.itemInfo}>
+                  <Typography variant="h6" className={styles.itemName}>
+                    {item.name}
+                  </Typography>
+                  <Typography variant="body2">
+                    Count: {item.count}
+                  </Typography>
+                  <Typography variant="body2">
+                    Category: {item.category || 'N/A'}
+                  </Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    Added: {new Date(item.dateAdded).toLocaleString()}
+                  </Typography>
+                </Box>
                 <IconButton onClick={() => deleteItem(item.id)} color="error">
                   <Delete />
                 </IconButton>
-              </Tooltip>
-            </Box>
-          </InventoryItem>
-        )) : (
-          <Typography variant="body1" color="textSecondary">No items found.</Typography>
-        )}
+              </Box>
+            ))
+          ) : (
+            <Typography align="center" color="textSecondary">
+              No items found.
+            </Typography>
+          )}
+        </Box>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ margin: '30px 0' }} />
 
-        <Typography variant="h6" gutterBottom>Activity Log</Typography>
-        {log.length ? log.map((entry, idx) => (
-          <Box key={idx} mb={1} p={2} bgcolor="#e8f5e9" borderRadius={2}>
-            <Typography variant="body1">{entry.name} - {entry.action}</Typography>
-            <Typography variant="caption">{new Date(entry.dateAdded).toLocaleString()}</Typography>
-          </Box>
-        )) : (
-          <Typography>No recent activity.</Typography>
-        )}
-      </Container>
-    </Background>
+        <Typography variant="h5" className={styles.logHeading}>
+          Activity Log
+        </Typography>
+        <Box className={styles.activityLog}>
+          {log.length ? (
+            log.slice(-10).reverse().map((entry, idx) => (
+              <Box key={idx} className={styles.logEntry}>
+                <Typography variant="body1">
+                  {entry.name} - <strong>{entry.action}</strong>
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  {new Date(entry.dateAdded).toLocaleString()}
+                </Typography>
+              </Box>
+            ))
+          ) : (
+            <Typography align="center" color="textSecondary">
+              No recent activity.
+            </Typography>
+          )}
+        </Box>
+      </Box>
+    </Box>
   );
 }
