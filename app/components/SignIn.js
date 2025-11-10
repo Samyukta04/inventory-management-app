@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button, Box, Typography, Paper } from '@mui/material';
+import { Button, Box, Typography } from '@mui/material';
 import { Google } from '@mui/icons-material';
 import { auth, GoogleAuthProvider } from '@/firebase';
 import { signInWithPopup } from 'firebase/auth';
@@ -21,23 +21,46 @@ const SignIn = ({ onSignIn }) => {
   };
 
   return (
-    <Box className={styles.centeredBox}>
-      <Paper className={styles.signInCard} elevation={3}>
-        <Typography variant="h4" className={styles.title}>
-          Welcome to Pantry App
+    <Box className={styles.container}>
+      <Box className={styles.content}>
+        <Typography variant="h1" className={styles.title}>
+          Pantry Manager
         </Typography>
-        <Typography variant="body1" className={styles.subtitle}>
-          Please sign in with your Google account to continue.
+        
+        <Typography variant="h5" className={styles.subtitle}>
+          Organize and track your inventory with ease
         </Typography>
+        
         <Button
-          variant="contained"
+          variant="outlined"
           startIcon={<Google />}
           onClick={handleSignIn}
           className={styles.signInButton}
         >
-          Sign In with Google
+          Continue with Google
         </Button>
-      </Paper>
+        
+        <Box className={styles.features}>
+          <Box className={styles.featureItem}>
+            <Typography variant="body2" className={styles.featureTitle}>Track Items</Typography>
+            <Typography variant="caption" className={styles.featureDesc}>
+              Keep tabs on quantity and categories
+            </Typography>
+          </Box>
+          <Box className={styles.featureItem}>
+            <Typography variant="body2" className={styles.featureTitle}>Expiry Dates</Typography>
+            <Typography variant="caption" className={styles.featureDesc}>
+              Never let food go to waste
+            </Typography>
+          </Box>
+          <Box className={styles.featureItem}>
+            <Typography variant="body2" className={styles.featureTitle}>Smart Search</Typography>
+            <Typography variant="caption" className={styles.featureDesc}>
+              Find what you need instantly
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 };

@@ -19,3 +19,52 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* Dark Mode Toggle Styling - GLOBAL */
+.MuiSwitch-root {
+  width: 48px !important;
+  height: 24px !important;
+  padding: 0 !important;
+}
+
+.MuiSwitch-switchBase {
+  padding: 2px !important;
+}
+
+.MuiSwitch-thumb {
+  width: 20px !important;
+  height: 20px !important;
+  background-color: #fff !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+}
+
+.MuiSwitch-track {
+  border-radius: 12px !important;
+  background-color: #e0e0e0 !important;
+  opacity: 1 !important;
+  border: 1px solid #d0d0d0 !important;
+}
+
+.MuiSwitch-switchBase.Mui-checked {
+  transform: translateX(24px) !important;
+}
+
+.MuiSwitch-switchBase.Mui-checked .MuiSwitch-thumb {
+  background-color: #fff !important;
+}
+
+.MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+  background-color: #1a1a1a !important;
+  opacity: 1 !important;
+  border-color: #1a1a1a !important;
+}
+
+/* Dark mode variant */
+.dark-mode .MuiSwitch-track {
+  background-color: #4a4a4a !important;
+}
+
+.dark-mode .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track {
+  background-color: #fff !important;
+  border-color: #fff !important;
+}
