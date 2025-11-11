@@ -3,6 +3,8 @@
 
 A simple inventory tracking app built with Next.js and Firebase. Helps you keep track of items in your pantry with categories and quantities.
 
+## Website link - https://inventory-management-app-one-beta.vercel.app/
+
 ## Features
 
 - Google authentication
